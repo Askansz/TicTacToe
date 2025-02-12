@@ -24,7 +24,8 @@ A sleek and modern implementation of the classic TicTacToe game with multiple AI
 
 ## 🚀 Live Demo
 
-[Play the game here](https://askansz.github.io/TicTacToe/
+[Play the game with the link below]
+(https://askansz.github.io/TicTacToe/
 
 ## 🛠️ Technologies Used
 
