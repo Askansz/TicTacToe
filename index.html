@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TicTacToe</title>
+    <title>TicTacToe with AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
     <style>
@@ -17,6 +17,40 @@
             align-items: center;
             justify-content: center;
             color: white;
+        }
+
+        .game-settings {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .game-mode-select {
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            cursor: pointer;
+            font-family: 'Righteous', cursive;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        .game-mode-select:hover {
+            background: rgba(76, 175, 80, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-mode-select option {
+            background: #2a5298;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
         }
 
         .board-container {
@@ -141,6 +175,14 @@
 </head>
 <body>
     <div class="game-container">
+        <div class="game-settings">
+            <select id="gameMode" class="game-mode-select">
+                <option value="pvp">Player vs Player</option>
+                <option value="easy">Player vs AI (Easy)</option>
+                <option value="medium">Player vs AI (Medium)</option>
+                <option value="hard">Player vs AI (Unbeatable)</option>
+            </select>
+        </div>
         <div class="status" id="status">Player X's turn</div>
         <div class="board-container">
             <div class="board" id="board">
@@ -172,9 +214,11 @@
         const cells = document.querySelectorAll('[data-cell]');
         const status = document.getElementById('status');
         const resetButton = document.getElementById('resetButton');
+        const gameModeSelect = document.getElementById('gameMode');
         let currentPlayer = 'X';
         let gameActive = true;
         let gameState = ['', '', '', '', '', '', '', '', ''];
+        let isAIGame = false;
 
         const winningCombinations = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -183,20 +227,32 @@
         ];
 
         cells.forEach(cell => {
-            cell.addEventListener('click', handleClick, { once: true });
+            cell.addEventListener('click', handleClick);
         });
 
         resetButton.addEventListener('click', resetGame);
+        gameModeSelect.addEventListener('change', resetGame);
 
         function handleClick(e) {
             const cell = e.target;
             const index = Array.from(cells).indexOf(cell);
 
-            if (!gameActive || gameState[index] !== '') return;
+            if (!gameActive || gameState[index] !== '' || 
+                (isAIGame && currentPlayer === 'O')) return;
 
+            makeMove(index);
+
+            if (isAIGame && gameActive) {
+                setTimeout(() => {
+                    makeAIMove();
+                }, 500);
+            }
+        }
+
+        function makeMove(index) {
             gameState[index] = currentPlayer;
-            cell.textContent = currentPlayer;
-            cell.classList.add(currentPlayer.toLowerCase());
+            cells[index].textContent = currentPlayer;
+            cells[index].classList.add(currentPlayer.toLowerCase());
 
             if (checkWin()) {
                 gameActive = false;
@@ -219,6 +275,90 @@
             status.textContent = `Player ${currentPlayer}'s turn`;
         }
 
+        function makeAIMove() {
+            const gameMode = gameModeSelect.value;
+            let move;
+
+            switch(gameMode) {
+                case 'easy':
+                    move = getRandomMove();
+                    break;
+                case 'medium':
+                    move = Math.random() < 0.5 ? getBestMove() : getRandomMove();
+                    break;
+                case 'hard':
+                    move = getBestMove();
+                    break;
+            }
+
+            if (move !== null) {
+                makeMove(move);
+            }
+        }
+
+        function getRandomMove() {
+            const availableMoves = gameState
+                .map((cell, index) => cell === '' ? index : null)
+                .filter(cell => cell !== null);
+            
+            if (availableMoves.length === 0) return null;
+            return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        }
+
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let bestMove = null;
+
+            for (let i = 0; i < gameState.length; i++) {
+                if (gameState[i] === '') {
+                    gameState[i] = 'O';
+                    let score = minimax(gameState, 0, false);
+                    gameState[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return bestMove;
+        }
+
+        function minimax(board, depth, isMaximizing) {
+            if (checkWinForMinimax('O')) return 1;
+            if (checkWinForMinimax('X')) return -1;
+            if (checkDraw()) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinForMinimax(player) {
+            return winningCombinations.some(combination => {
+                return combination.every(index => gameState[index] === player);
+            });
+        }
+
         function checkWin() {
             return winningCombinations.some(combination => {
                 return combination.every(index => {
@@ -235,12 +375,12 @@
             gameState = ['', '', '', '', '', '', '', '', ''];
             gameActive = true;
             currentPlayer = 'X';
+            isAIGame = gameModeSelect.value !== 'pvp';
             status.textContent = `Player ${currentPlayer}'s turn`;
             cells.forEach(cell => {
                 cell.textContent = '';
                 cell.setAttribute('data-hover', 'X');
                 cell.classList.remove('x', 'o');
-                cell.addEventListener('click', handleClick, { once: true });
             });
         }
     </script>
