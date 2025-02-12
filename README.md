@@ -92,9 +92,9 @@ Challenge friends in PvP mode for maximum fun
 
 If you encounter any issues:
 
-Clear your browser cache
-Ensure JavaScript is enabled
-Try a different browser
+Clear your browser cache, 
+Ensure JavaScript is enabled, 
+Try a different browser, 
 Check console for any errors
 
 ## 🌟 Special Thanks
