@@ -1,4 +1,4 @@
-# Stylish Tic Tac Toe Game 🎮
+# Tic Tac Toe Game 🎮
 
 A modern, beautifully designed Tic Tac Toe game built with HTML, CSS, and JavaScript. Features a sleek glass-morphism UI design with smooth animations and responsive gameplay.
 
