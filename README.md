@@ -1,4 +1,4 @@
-# ⚡ Modern TicTacToe Game
+# ⚡ TicTacToe Game
 
 A sleek and modern implementation of the classic TicTacToe game with multiple AI difficulty levels and a beautiful responsive design.
 
